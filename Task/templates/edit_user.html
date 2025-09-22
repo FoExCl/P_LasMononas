@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>Editar Usuario</h2>
+    <form method="post" action="{% url 'edit_user' user_id=form.instance.id_empleado %}">
+
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Actualizar Usuario</button>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% include 'navbar.html' %}
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #fdf2f8;
+        background-image: 
+            linear-gradient(45deg, #fbcfe8 25%, transparent 25%),
+            linear-gradient(-45deg, #fbcfe8 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #fbcfe8 75%),
+            linear-gradient(-45deg, transparent 75%, #fbcfe8 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        min-height: 100vh;
+    }
+    #cuadro {
+        background-color: #be185d;
+        color: #f0f0f0f0;
+    }
+    .sorting {
+        color: white;
+        background-color: white;
+    }
+    .container-box {
+        background-color: white;
+        color: #be185d;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px;
+        margin-bottom: 15px;
+        width: 100%;
+        max-width: 1200px;
+    }
+    label {
+        color: black;
+    }
+    .dataTables_info {
+        color: black;
+    }
+    .form-control {
+        color: black;
+    }
+    .title-box {
+        background-color: white;
+        color: #be185d;
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px;
+        margin: 20px auto;
+        width: 90%;
+        max-width: 600px;
+    }
+    .btn-primary, .btn-secondary {
+        background-color: #be185d !important;
+        border-color: #a31450 !important;
+        color: white !important;
+        outline: none !important;
+    }
+    .btn-primary:hover, .btn-secondary:hover {
+        background-color: #a31450 !important;
+        border-color: #7f0f3c !important;
+    }
+    .btn-primary:focus, .btn-primary:active, .btn-secondary:focus, .btn-secondary:active {
+        background-color: #a31450 !important;
+        border-color: #7f0f3c !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    .inactive-user {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+    }
+    @media (max-width: 768px) {
+        .container-box, .title-box {
+            width: 95%;
+            padding: 10px;
+        }
+        .table th, .table td {
+            font-size: 0.8rem;
+            padding: 4px;
+        }
+        .btn-group-sm > .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.7rem;
+        }
+        .dataTables_filter, .dataTables_length {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+<div class="container-fluid d-flex flex-column align-items-center">
+    <div class="title-box">
+        <h1>Lista de Usuarios</h1>
+    </div>
+    <div class="container-box">
+        <div class="table-responsive">
+            <table id="userTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Edad</th>
+                        <th>Teléfono</th>
+                        <th>Correo</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for empleado in empleados %}
+                    <tr class="{% if not empleado.id_user.is_active %}inactive-user{% endif %}">
+                        <td>{{ empleado.id_empleado }}</td>
+                        <td>{{ empleado.nombre }}</td>
+                        <td>{{ empleado.apellido }}</td>
+                        <td>{{ empleado.edad }}</td>
+                        <td>{{ empleado.telefono }}</td>
+                        <td>{{ empleado.correo }}</td>
+                        <td>{{ empleado.direccion }}</td>
+                        <td>{% if empleado.id_user.is_active %}Activo{% else %}Inactivo{% endif %}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-success edit-user" data-user-id="{{ empleado.id_user.id }}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                {% if empleado.id_user.id != request.user.id %}
+                                <button class="btn btn-warning toggle-active" data-user-id="{{ empleado.id_user.id }}" data-is-active="{{ empleado.id_user.is_active|yesno:'true,false' }}">
+                                    {% if empleado.id_user.is_active %}
+                                        <i class="fa-solid fa-user-slash"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-user-check"></i>
+                                    {% endif %}
+                                </button>
+                            {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-secondary mb-3" id="addUserBtn">
+                Agregar Usuario
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- The user form will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables and Responsive Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.2.0/b-colvis-3.2.0/b-html5-3.2.0/b-print-3.2.0/cr-2.0.4/date-1.5.4/fc-5.0.4/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataTable
+        const userTable = $('#userTable').DataTable({
+            responsive: true,
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+            },
+            columnDefs: [
+                { 
+                    targets: -1, // Last column (actions)
+                    orderable: false, // Disable sorting for actions column
+                    className: 'text-center',
+                    responsivePriority: 1 // Ensure this column is always visible
+                },
+                { 
+                    targets: 3, // Age column 
+                    type: 'num' // Ensure numeric sorting for age
+                }
+            ],
+            responsive: {
+                details: {
+                    display: $.fn.dataTable.Responsive.display.modal({
+                        header: function (row) {
+                            var data = row.data();
+                            return 'Detalles de ' + data[1] + ' ' + data[2];
+                        }
+                    }),
+                    renderer: $.fn.dataTable.Responsive.renderer.tableAll({
+                        tableClass: 'table'
+                    })
+                }
+            }
+        });
+
+        const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+        const modalBody = document.querySelector('#userModal .modal-body');
+        const modalTitle = document.getElementById('userModalLabel');
+    
+        // Limpiar el modal antes de cerrarlo
+        document.getElementById('userModal').addEventListener('hidden.bs.modal', function () {
+            modalBody.innerHTML = '';
+            modalTitle.textContent = '';
+        });
+    
+        document.getElementById('addUserBtn').addEventListener('click', function() {
+            openUserModal("Agregar Usuario", "{% url 'add_user' %}");
+        });
+    
+        document.querySelectorAll('.edit-user').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                openUserModal("Editar Usuario", `/users/edit/${userId}/`);
+            });
+        });
+        
+        document.querySelectorAll('.toggle-active').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                const isActive = this.getAttribute('data-is-active') === 'true';
+                const currentUserId = '{{ request.user.id }}';
+                
+                if (userId === currentUserId) {
+                    alert('No puedes cambiar el estado de tu propio perfil.');
+                    return;
+                }
+
+                const action = isActive ? 'desactivar' : 'activar';
+                if (confirm(`¿Estás seguro que deseas ${action} este perfil?`)) {
+                    fetch(`/users/toggle-active/${userId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`Perfil ${action}do exitosamente.`);
+                            window.location.reload();
+                        } else {
+                            alert('Error al cambiar el estado del usuario.');
+                        }
+                    });
+                }
+            });
+        });
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        function openUserModal(title, url) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = '<p>Cargando formulario...</p>';
+            userModal.show();
+    
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    modalBody.innerHTML = html;
+                    const form = modalBody.querySelector('form');
+                    if (form) {
+                        setupFormSubmission(form);
+                    } else {
+                        modalBody.innerHTML = '<p class="text-danger">Error: No se pudo cargar el formulario</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando el formulario:', error);
+                    modalBody.innerHTML = '<p class="text-danger">Error al cargar el formulario</p>';
+                });
+        }
+    
+        function setupFormSubmission(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        userModal.hide();
+                     window.location.reload();
+                    } else {
+                        const errors = data.errors;
+                        let errorHtml = '<ul>';
+                        for (let field in errors) {
+                            errors[field].forEach(err => {
+                                errorHtml += `<li><strong>${field}:</strong> ${err}</li>`;
+                            });
+                        }
+                        errorHtml += '</ul>';
+                        modalBody.innerHTML = errorHtml + modalBody.innerHTML;
+                }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar el formulario.');
+                });
+            });
+        }
+    });
+</script>
+{% endblock content %}

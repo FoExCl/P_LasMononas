@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h2>Crear Venta</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    {{ formset.management_form }}
+
+    <h4>Productos</h4>
+    <table class="table" id="productos-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in formset %}
+            <tr class="producto-line">
+                <td>{{ f.id_producto }}</td>
+                <td>{{ f.cantidad }}</td>
+                <td class="subtotal">$0.00</td>
+                <td>
+                    {% if formset.can_delete %}
+                    {{ f.DELETE }}
+                    <button type="button" class="btn btn-danger btn-sm delete-line">Eliminar</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-success" id="add-line">➕ Agregar Producto</button>
+
+    <h4>Total: $<span id="total">0.00</span></h4>
+    <input type="hidden" name="total_venta" id="total_venta" value="0">
+
+    <button type="submit" class="btn btn-primary">💾 Guardar Venta</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll('#productos-table tbody tr').forEach(row => {
+            const select = row.querySelector('select');
+            const qty = row.querySelector('input[type=number]');
+            const subtotalTd = row.querySelector('.subtotal');
+            if (select && qty) {
+                const price = parseFloat(select.options[select.selectedIndex].dataset.precio || 0);
+                const cantidad = parseFloat(qty.value) || 0;
+                const subtotal = price * cantidad;
+                subtotalTd.textContent = '$' + subtotal.toFixed(2);
+                total += subtotal;
+            }
+        });
+        document.getElementById('total').textContent = total.toFixed(2);
+        document.getElementById('total_venta').value = total.toFixed(2);
+    }
+
+    document.getElementById('productos-table').addEventListener('change', updateTotal);
+    document.getElementById('productos-table').addEventListener('input', updateTotal);
+
+    document.getElementById('add-line').addEventListener('click', function() {
+        const tbody = document.querySelector('#productos-table tbody');
+        const newRow = tbody.querySelector('tr').cloneNode(true);
+        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        newRow.querySelectorAll('input[type=number]').forEach(input => input.value = 1);
+        tbody.appendChild(newRow);
+        updateTotal();
+    });
+
+    document.querySelector('#productos-table').addEventListener('click', function(e) {
+        if (e.target.classList.contains('delete-line')) {
+            e.target.closest('tr').remove();
+            updateTotal();
+        }
+    });
+
+    // Setear precios en options
+    document.querySelectorAll('#productos-table select').forEach(select => {
+        {% for p in productos %}
+        const option = select.querySelector('option[value="{{ p.id_producto }}"]');
+        if (option) option.dataset.precio = '{{ p.precio }}';
+        {% endfor %}
+    });
+
+    updateTotal();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% if user.is_authenticated %}
+{% block sidebar %}
+<nav class="navbar navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="{% url 'user' %}">
+      <img src="" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2">
+      Las Mononas
+    </a>
+  </div>
+</nav>
+
+<div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel" style="width: 250px;">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="sidebarLabel">
+      <img src="" alt="Logo" width="30" height="30" class="me-2">
+      Las Mononas
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body p-0">
+    <div class="d-flex flex-column h-100">
+      <ul class="nav nav-pills nav-sidebar flex-column">
+        <!-- Perfil visible para todos -->
+        <li class="nav-item">
+          <a href="{% url 'user' %}" class="nav-link text-white">
+            <i class="nav-icon fas fa-user"></i>    
+            Perfil
+          </a>
+        </li>
+
+        <!-- Lista de usuarios solo admins -->
+        {% if request.user.is_staff %}
+        <li class="nav-item">
+          <a href="{% url 'userlist' %}" class="nav-link text-white">
+            <i class="nav-icon fas fa-users"></i>
+            Lista de usuarios
+          </a>
+        </li>
+        {% endif %}
+
+        <!-- Links visibles para todos los empleados -->
+        <li class="nav-item">
+          <a href="{% url 'lista_cajas' %}" class="nav-link text-white">
+            <i class="nav-icon fas fa-box"></i>
+            Listado de Cajas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'lista_ventas' %}" class="nav-link text-white">
+            <i class="nav-icon fas fa-cash-register"></i>
+            Gestión de Ventas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'lista_productos' %}" class="nav-link text-white">
+            <i class="nav-icon fas fa-boxes"></i>
+            Control de Stock
+          </a>
+        </li>
+      </ul>
+
+      <div class="mt-auto">
+        <hr>
+        <a href="{% url 'exit' %}" class="nav-link text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-door-closed-fill" viewBox="0 0 16 16">
+            <path d="M12 1a1 1 0 0 1 1 1v13h1.5a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1H3V2a1 1 0 0 1 1-1zm-2 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+          </svg>
+          Cerrar sesión
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="content-wrapper" style="margin-top: 60px; padding-left: 0;">
+  <div class="container-fluid pt-4">
+    {% block content %}
+    {% endblock %}
+  </div>
+</main>
+{% endblock sidebar %}
+{% endif %}

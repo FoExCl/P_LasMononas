@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% include 'navbar.html' %}
+
+<style>
+       body {
+        font-family: 'Arial', sans-serif;
+        background-color: #fdf2f8;
+        background-image: 
+            linear-gradient(45deg, #fbcfe8 25%, transparent 25%),
+            linear-gradient(-45deg, #fbcfe8 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #fbcfe8 75%),
+            linear-gradient(-45deg, transparent 75%, #fbcfe8 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        min-height: 100vh;
+    }
+    h1{
+        color: #be185d;
+    }
+    
+    
+    .btn-primary {
+        background-color: #be185d !important; /* Nuevo color base del botón */
+        border-color: #a31450 !important; /* Ajustar un tono más oscuro para el borde */
+        color: white !important; /* Asegurar que el texto sea legible */
+        outline: none !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #a31450 !important; /* Color al pasar el cursor */
+        border-color: #7f0f3c !important; /* Ajustar borde al pasar el cursor */
+        color: white !important;
+    }
+
+    .btn-primary:focus, .btn-primary:active {
+        background-color: #a31450 !important; /* Color al hacer clic o enfocado */
+        border-color: #7f0f3c !important; /* Borde al hacer clic o enfocado */
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+
+
+    .form-control:focus {
+        border-color: #65B7A8; /* Color de borde cuando el campo está enfocado */
+        box-shadow: 0 0 5px rgba(101, 183, 168, 0.8); /* Sombra verde cuando está enfocado */
+    }
+
+     .container-box {
+        background-color: white;
+        border: 2px solid #be185d; /* Cambiar borde al color deseado */
+        padding: 15px;
+        border-radius: 10px; /* Ajustar redondeo */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+        margin-bottom: 15px;
+        width: 100%;
+        max-width: 800px;
+    }
+
+    .title-box {
+        background-color: white;
+        border: 2px solid #be185d; /* Cambiar borde al color deseado */
+        padding: 20px;
+        border-radius: 10px; /* Ajustar redondeo */
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+        width: 100%;
+        max-width: 800px;
+    }
+
+    .profile-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .profile-info-item {
+        margin-bottom: 15px;
+    }
+
+    .profile-info-item strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .title-box, .container-box {
+            margin-left: auto;
+            margin-right: auto;
+            padding: 10px;
+        }
+    }
+    .password-requirements li {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="container d-flex flex-column align-items-center">
+    <div class="title-box">
+        <h1>Perfil del Usuario</h1>
+    </div>
+    <div class="container-box">
+        <div class="profile-info">
+            <div class="profile-info-item">
+                <strong>ID Empleado:</strong>
+                <p>{{ empleado.id_empleado }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Nombre:</strong>
+                <p>{{ empleado.nombre }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Apellido:</strong>
+                <p>{{ empleado.apellido }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Edad:</strong>
+                <p>{{ empleado.edad }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Teléfono:</strong>
+                <p>{{ empleado.telefono }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Correo:</strong>
+                <p>{{ empleado.correo }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Dirección:</strong>
+                <p>{{ empleado.direccion }}</p>
+            </div>
+            <div class="profile-info-item">
+                <strong>Nombre de Usuario:</strong>
+                <p>{{ empleado.id_user.username }}</p>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                Cambiar contraseña
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Editar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'edit_profile' empleado.id_user.id %}">
+                    {% csrf_token %}
+                    {{ edit_form.as_p }}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="passwordModalLabel">Cambiar Contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'change_password' %}" id="password-change-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_password_actual" class="form-label">Contraseña actual:</label>
+                        <input type="password" name="password_actual" class="form-control" required id="id_password_actual">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password_nueva" class="form-label">Nueva contraseña:</label>
+                        <input type="password" name="password_nueva" class="form-control" autocomplete="new-password" required id="id_password_nueva">
+                        <div class="form-text">
+                            <ul id="password-requirements" class="password-requirements">
+                                <li id="req-personal">Su contraseña no debe contener información personal.</li>
+                                <li id="req-length">Su contraseña debe contener al menos 8 caracteres.</li>
+                                <li id="req-common">Su contraseña no puede ser una contraseña de uso común.</li>
+                                <li id="req-numeric">Su contraseña no puede ser completamente numérica.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password_confirmacion" class="form-label">Confirmar nueva contraseña:</label>
+                        <input type="password" name="password_confirmacion" class="form-control" autocomplete="new-password" required id="id_password_confirmacion">
+                        <div class="form-text">Ingrese la misma contraseña que usó antes para verificarla.</div>
+                    </div>
+                    <div id="password-match-error" class="alert alert-danger d-none">
+                        Las contraseñas no coinciden.
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">Cambiar contraseña</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('password-change-form');
+        const password1 = document.getElementById('id_password_nueva');
+        const password2 = document.getElementById('id_password_confirmacion');
+        const submitBtn = document.getElementById('submit-btn');
+        const passwordMatchError = document.getElementById('password-match-error');
+        const requirements = document.getElementById('password-requirements');
+    
+        function validatePassword() {
+            const pass = password1.value;
+            const isLongEnough = pass.length >= 8;
+            const hasNonNumeric = /[^0-9]/.test(pass);
+            
+            document.getElementById('req-length').style.color = isLongEnough ? 'green' : 'red';
+            document.getElementById('req-numeric').style.color = hasNonNumeric ? 'green' : 'red';
+            
+            return isLongEnough && hasNonNumeric;
+        }
+    
+        function checkPasswordMatch() {
+            if (password2.value === '') {
+                passwordMatchError.classList.add('d-none');
+                return true;
+            } else if (password1.value === password2.value) {
+                passwordMatchError.classList.add('d-none');
+                return true;
+            } else {
+                passwordMatchError.classList.remove('d-none');
+                return false;
+            }
+        }
+    
+        password1.addEventListener('input', validatePassword);
+        password2.addEventListener('input', checkPasswordMatch);
+    
+        form.addEventListener('submit', function(e) {
+            if (!validatePassword() || !checkPasswordMatch()) {
+                e.preventDefault();
+                alert('Por favor, corrija los errores antes de enviar el formulario.');
+            }
+        });
+    });
+</script>
+{% endblock content %}

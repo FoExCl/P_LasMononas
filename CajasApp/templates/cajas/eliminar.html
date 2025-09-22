@@ -1,0 +1,9 @@
+<h1>Eliminar Caja</h1>
+
+<p>¿Está seguro que desea eliminar la caja "{{ caja.id_caja }}"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">🗑️ Eliminar</button>
+    <a href="{% url 'lista_cajas' %}" class="btn btn-secondary">⬅️ Volver</a>
+</form>
